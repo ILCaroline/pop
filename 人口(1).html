@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title></title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #layerToggle {
+        top: 20px;
+        right: 20px;
+        position: absolute;
+        z-index: 99;
+        background-color: white;
+        border-radius: 8px;
+        padding: 10px;
+        opacity: 0.75;
+      }
+      #sys {
+	      bottom: 70px;
+	      right: 20px;
+	      position: absolute;
+	      z-index: 99;
+	      background-color: white;
+	      border-radius: 10px;
+	      padding: 10px;
+	      opacity: 0.75;
+	      width: 200px;
+    	}
+
+	    #cod {
+	      bottom: 20px;
+	      right: 20px;
+	      position: absolute;
+	      z-index: 99;
+	      background-color: white;
+	      border-radius: 10px;
+	      padding: 10px;
+	      opacity: 0.75;
+	      width: 200px;
+	    }
+			.panel-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .panel-side {
+        padding: 2px;
+        box-sizing: border-box;
+        width: 280px;
+        height: 60%;
+        position: absolute;
+        top: 80px;
+        right: 0;
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.6);
+        overflow: auto;
+        z-index: 60;
+      }
+
+      .panel-side h3 {
+        padding: 0 20px;
+        margin: 20px 0;
+      }
+
+      .panel-side ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .panel-side li {
+        list-style: none;
+        padding: 10px 20px;
+      }
+
+      .panel-result {
+        cursor: pointer;
+        margin: 2px 0;
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+
+      .panel-result:hover,
+      .panel-result:focus {
+        color: orange;
+        background-color: rgba(0, 0, 0, 0.75);
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <script>
+      require(["esri/Map", "esri/views/MapView","esri/layers/GeoJSONLayer","esri/widgets/Legend","esri/widgets/BasemapToggle"], function(Map, MapView,GeoJSONLayer,Legend,BasemapToggle) {
+        var map = new Map({
+          basemap: "dark-gray"
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [102, 36],
+          zoom: 4
+        });
+        
+        const listNode = document.getElementById("nyc_graphics");
+        
+        var geoJSONLayer2 = new GeoJSONLayer({
+          url:  "https://raw.githubusercontent.com/ILCaroline/pop/master/heatmap.json",
+          id: "heatmap",
+          title: "GDP",  
+          visible: false,
+          objectIdField: "id",
+            fields: [
+              {
+                name: "2018",
+                alias: "2018年",
+                type: "double"
+              }
+            ]
+           });
+           
+	        geoJSONLayer2.renderer = {
+				  type: "heatmap",
+				  field: "2018",
+				  colorStops: [
+				    { ratio: 0, color: "rgba(255, 255, 255, 0)" },
+				    { ratio: 1, color: "rgba(255, 97, 0, 1)" }
+				  ],
+				  minPixelIntensity: 1477.63,
+				  maxPixelIntensity: 100000
+				};
+
+        var geoJSONLayer = new GeoJSONLayer({
+          url:  "https://raw.githubusercontent.com/ILCaroline/pop/master/chinagdp.json",
+          id: "ny-housing",
+          copyright: "chinagdp",
+          title: "中国人口数量",         
+          objectIdField: "id",
+            fields: [
+              {
+                name: "NAME",
+                type: "string"
+              },
+              {
+                name: "2018",
+                alias: "2018年",
+                type: "double"
+              },
+              {
+                name: "2017",
+                alias: "2017年",
+                type: "double"
+              },
+              {
+                name: "2016",
+                alias: "2016年",
+                type: "double"
+              },
+              {
+                name: "2015",
+                alias: "2015年",
+                type: "double"
+              },
+              {
+                name: "2014",
+                alias: "2014年",
+                type: "double"
+              },
+              {
+                name: "people",
+                alias: "people",
+                type: "double"
+              },
+              {
+                name: "man",
+                alias: "man",
+                type: "double"
+              },
+              {
+                name: "woman",
+                alias: "woman",
+                type: "double"
+              }
+            ],
+  
+						popupTemplate: {
+              title: "{NAME}",
+              content: [
+              {
+                type: "fields", 
+                fieldInfos: [
+                  {
+                    fieldName: "2018",
+                    visible: true,
+                    label: "2018年生产总值(亿元)",
+                    format: {
+                      places: 0,
+                      digitSeparator: false
+                    }
+                  },
+                  {
+                    fieldName: "2017",
+                    visible: true,
+                    label: "2017年生产总值(亿元)",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    }
+                  },
+                   {
+                    fieldName: "2016",
+                    visible: true,
+                    label: "2016年生产总值(亿元)",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    }
+                  },
+                   {
+                    fieldName: "2015",
+                    visible: true,
+                    label: "2015年生产总值(亿元)",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    }
+                  },
+                   {
+                    fieldName: "2014",
+                    visible: true,
+                    label: "2014年生产总值(亿元)",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    }
+                  }
+                ]
+              },
+              
+              {
+                type: "text", 
+                text:"{NAME}2014——2018年生产总值统计："
+              },
+                            
+              {
+                type: "media", // MediaContentElement
+                mediaInfos: [
+                  {
+                    title: "<b>{NAME}2014——2018年生产总值条形统计图</b>",
+                    type: "column-chart",
+                    caption: "",
+                    value: {
+                      fields: ["2014","2015","2016","2017","2018"],
+                      normalizeField: null,
+                      tooltipField: ""
+                    }
+                  },
+                  {
+                    title: "<b>{NAME}2014——2018年生产总值折线统计图</b>",
+                    type: "line-chart",
+                    caption: "",
+                    value: {
+                      fields: ["2014","2015","2016","2017","2018"],
+                      normalizeField: null,
+                      tooltipField: ""
+                    }
+                  }
+                  
+                ]
+              },
+              
+              {
+                type: "text", 
+                text:
+                  "{NAME}人口数为{people}，其中男性{man}名，女性{woman}名，性别占比统计图如下："
+              },
+              
+              {
+                type: "media", 
+                mediaInfos: [
+                  {
+                    title: "<b>{NAME}人口性别比例图</b>",
+                    type: "pie-chart",
+                    caption: "",
+                    value: {
+                      fields: ["man","woman"],
+                      normalizeField: null,
+                      tooltipField: ""
+                    }
+                  },
+                ]
+              },
+
+            ]
+               
+            },
+            renderer: {
+              type: "class-breaks",
+              defaultLabel: "",
+              defaultSymbol: {
+                type: "simple-fill",
+                color: "#D0D0D0",
+                outline: {
+                  color: [255, 255, 255, 0.1],
+                  width: 0.5
+                }
+              },
+              visualVariables: [
+                {
+                  type: "color",
+                  field: "people",
+                  stops: [
+                    { value: 350000, color: "#D0D0CB" },
+                    { value: 92000000, color: "#4F6704" }
+                  ]
+                }
+              ]
+            }
+            
+        });
+
+        view.when(function() {
+          geoJSONLayer.when(function() {
+            view.goTo(geoJSONLayer.fullExtent);
+          });
+        });
+
+        var heatmapLayerToggle = document.getElementById("heatmapLayer");
+        heatmapLayerToggle.addEventListener("change", function() {
+          geoJSONLayer2.visible = heatmapLayerToggle.checked;
+        });
+
+        map.add(geoJSONLayer);    
+        map.add(geoJSONLayer2);    
+        view.ui.add(new Legend({ view: view }), "bottom-left");
+        
+        var sys = document.getElementById("system");
+        var cod = document.getElementById("codte");
+        view.on("pointer-move" , function(evt){
+           var point = view.toMap({x: evt.x, y: evt.y});
+           var xjeq = " x: "+point.longitude.toFixed(3)+ " , y: "+ point.latitude.toFixed(3);
+           sys.value = xjeq;
+           cod.value = "  1: " +view.scale.toFixed(3); 
+        });
+        
+        var toggle = new BasemapToggle({
+          view: view, 
+          nextBasemap: "topo" 
+        });
+        view.ui.add(toggle, "top-left");
+        
+        let graphics;
+
+        view.whenLayerView(geoJSONLayer).then(function(layerView) {
+          layerView.watch("updating", function(value) {
+            if (!value) {
+              layerView
+                .queryFeatures({
+                  geometry: view.extent,
+                  returnGeometry: true
+                })
+                .then(function(results) {
+                  graphics = results.features;
+
+                  const fragment = document.createDocumentFragment();
+
+                  graphics.forEach(function(result, index) {
+                    const attributes = result.attributes;
+                    const name = attributes.NAME;
+                    const li = document.createElement("li");
+                    li.classList.add("panel-result");
+                    li.tabIndex = 0;
+                    li.setAttribute("data-result-id", index);
+                    li.textContent = name;
+
+                    fragment.appendChild(li);
+                  });
+                  listNode.innerHTML = "";
+                  listNode.appendChild(fragment);
+                })
+                .catch(function(error) {
+                  console.error("query failed: ", error);
+                });
+            }
+          });
+        });
+
+        listNode.addEventListener("click", onListClickHandler);
+
+        function onListClickHandler(event) {
+          const target = event.target;
+          const resultId = target.getAttribute("data-result-id");
+          const result =
+            resultId && graphics && graphics[parseInt(resultId, 10)];
+
+          if (result) {
+            view.goTo(result.geometry.extent.expand(2)).then(function() {
+              view.popup.open({
+                features: [result],
+                location: result.geometry.centroid
+              });
+            });
+          }
+        }
+        
+      });
+    </script>
+  </head>
+
+  <body>
+  	<div class="panel-container">
+      <div class="panel-side">
+        <h3>GDP及人口性别比例查询</h3>
+        <ul id="nyc_graphics">
+          <li>Loading&hellip;</li>
+        </ul>
+      </div>
+      <div id="viewDiv"></div>
+    </div>
+    
+    <span id="layerToggle">
+      <input type="checkbox" id="heatmapLayer" /> GDP热力图
+    </span>
+    <span id="sys">
+	    <input type="text" id="system"> 坐标
+	  </span>
+	  <span id="cod">
+	    <input type="text" id="codte"> 比例尺
+	  </span>
+  </body>
+</html>
